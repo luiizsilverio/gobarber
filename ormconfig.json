@@ -5,8 +5,11 @@
     "username": "postgres",
     "password": "masterkey",
     "database": "gobarber",
+    "entities": [
+        "./src/models/*.ts"
+    ],
     "migrations": [
-        "./src/database/migrations/*.tx"
+        "./src/database/migrations/*.ts"
     ],
     "cli": {
         "migrationsDir": "./src/database/migrations"

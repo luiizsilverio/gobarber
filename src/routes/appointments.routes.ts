@@ -1,36 +1,35 @@
 import { Router } from 'express';
 import { parseISO } from 'date-fns';
+import { getCustomRepository } from 'typeorm';
 
 import AppointmentsRepository from '../repositories/AppointmentsRepository';
 import CreateAppointmentService from '../services/CreateAppointmentService';
+import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const appointmentsRouter = Router();
-const appointmentsRepository = new AppointmentsRepository;
 
-// SoC: Separation of Concerns (separação de procupações)
-// DTO: Data Transfer Object
-// Rota: receber a requisição, chamar outro arquivo para tratar
-// a requisição e devolver uma resposta para o cliente.
+appointmentsRouter.use(ensureAuthenticated);
 
-appointmentsRouter.get('/', (request, response) => {
-  const appointments = appointmentsRepository.all();
+appointmentsRouter.get('/', async (request, response) => {
+  //console.log(request.user);
+  const appointmentsRepository = getCustomRepository(AppointmentsRepository);
+  const appointments = await appointmentsRepository.find();
 
   return response.json(appointments);
 })
 
 // POST http://localhost:3333/appointments
 
-appointmentsRouter.post('/', (req, resp) => {
+appointmentsRouter.post('/', async (req, resp) => {
   try {
-    const { provider, date } = req.body;
-
+    const { provider_id, date } = req.body;
+    
     const parsedDate = parseISO(date);
 
-    const createAppointment = new CreateAppointmentService(
-      appointmentsRepository
-    );
+    const createAppointment = new CreateAppointmentService();
 
-    const appointment = createAppointment.execute({ provider, date: parsedDate });
+    const appointment = await createAppointment.execute({ provider_id, date: parsedDate });
+    
     return resp.json(appointment);
   } catch (err) {
     return resp.status(400).json({ error: err.message })

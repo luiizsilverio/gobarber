@@ -1,35 +1,35 @@
+import { getCustomRepository } from 'typeorm';
+import { startOfHour } from 'date-fns';
+
 import Appointment from '../models/Appointment';
 import AppointmentsRepository from '../repositories/AppointmentsRepository';
-import { startOfHour } from 'date-fns';
 
 // um serviço sempre deve ter um único método, chamado execute ou run.
 
 interface Request {
-  provider: string;
+  provider_id: string;
   date: Date;
 }
 
 class CreateAppointmentService {
-  private appointmentsRepository: AppointmentsRepository;
-
-  constructor(appointmentsRepository: AppointmentsRepository) {
-    this.appointmentsRepository = appointmentsRepository;
-  }
-
-  public execute({ date, provider }: Request): Appointment {
+  public async execute({ date, provider_id }: Request): Promise<Appointment> {
+    const appointmentsRepository = getCustomRepository(AppointmentsRepository);
+    
     const appointmentDate = startOfHour(date);
 
-    const findAppointment = this.appointmentsRepository
+    const findAppointment = await appointmentsRepository
       .findByDate(appointmentDate);
 
     if (findAppointment) {
       throw Error('Este horário já tem agendamento')
     }
 
-    const appointment = this.appointmentsRepository.create({
-      provider,
+    const appointment = appointmentsRepository.create({
+      provider_id,
       date: appointmentDate
     });
+
+    await appointmentsRepository.save(appointment);
 
     return appointment;
   }
