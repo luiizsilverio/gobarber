@@ -4,6 +4,7 @@ import { sign } from 'jsonwebtoken';
 
 import User from '../models/User';
 import authConfig from '../config/auth';
+import AppError from '../errors/AppError';
 
 interface Request {
     email: string;
@@ -24,23 +25,25 @@ class AuthenticateUserService {
         });
 
         if (!user) {
-            throw new Error('E-mail ou senha incorretos.');
+            //throw new Error('E-mail ou senha incorretos.');
+            throw new AppError('E-mail ou senha incorretos.', 401);
         }
 
         // compara uma senha normal com outra criptografada 
         const passwordMatched = await compare(password, user.password);
 
         if (!passwordMatched) {
-            throw new Error('E-mail ou senha incorretos.');
+            //throw new Error('E-mail ou senha incorretos.');
+            throw new AppError('E-mail ou senha incorretos.', 401);
         }
 
         const { secret, expiresIn } = authConfig.jwt;
 
         const token = sign({}, secret /* frase secreta */, {
             subject: user.id,
-            expiresIn: expiresIn, // '1d', //expira em 24 horas
+            expiresIn, // '1d', //expira em 24 horas
         });
-                
+               
         return { user, token };
     }
 }

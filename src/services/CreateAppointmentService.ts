@@ -3,6 +3,7 @@ import { startOfHour } from 'date-fns';
 
 import Appointment from '../models/Appointment';
 import AppointmentsRepository from '../repositories/AppointmentsRepository';
+import AppError from '../errors/AppError';
 
 // um serviço sempre deve ter um único método, chamado execute ou run.
 
@@ -21,7 +22,8 @@ class CreateAppointmentService {
       .findByDate(appointmentDate);
 
     if (findAppointment) {
-      throw Error('Este horário já tem agendamento')
+      //throw new Error('Este horário já tem agendamento')
+      throw new AppError('Este horário já tem agendamento')
     }
 
     const appointment = appointmentsRepository.create({
